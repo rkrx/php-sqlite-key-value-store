@@ -1,0 +1,19 @@
+{
+	"name": "rkr/sqlite-key-value-store",
+	"type": "library",
+	"description": "A sqlite-based key-value-store implementation.",
+	"homepage": "https://github.com/rkrx/php-sqlite-key-value-store",
+	"license": "MIT",
+	"require": {
+		"php": ">= 5.3",
+		"rkr/key-value-stores": "dev-master"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~3.7"
+	},
+	"autoload": {
+		"psr-0": {
+			"Kir\\Stores\\KeyValueStores\\Sqlite\\": ["src/", "tests/"]
+		}
+	}
+}
