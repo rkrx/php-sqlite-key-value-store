@@ -2,6 +2,7 @@
 namespace Kir\Stores\KeyValueStores\Sqlite;
 
 use Kir\Stores\KeyValueStores\Common\TypeCheckHelper;
+use Kir\Stores\KeyValueStores\Sqlite\Helper\Sqlite;
 use PDO;
 use PDOStatement;
 use PDOException;
@@ -34,13 +35,7 @@ class PdoSqliteContextRepository implements IterableContextRepositoryWithIterabl
 	 *
 	 */
 	public function __construct($filename) {
-		$this->db = $db = new PDO(sprintf('sqlite:%s', $filename));
-		$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$db->exec('CREATE TABLE IF NOT EXISTS s_contexts(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);');
-		$db->exec('CREATE UNIQUE INDEX IF NOT EXISTS unique_name ON s_contexts(name);');
-		$db->exec('CREATE TABLE IF NOT EXISTS s_keyvalue(context_id TEXT, name TEXT, value TEXT, PRIMARY KEY (context_id, name), FOREIGN KEY(context_id) REFERENCES s_contexts(id));');
-		$db->exec('CREATE INDEX IF NOT EXISTS context_index ON s_keyvalue(context_id);');
-
+		$this->db = $db = new Sqlite($filename);
 		$this->preparedQueries['iterator'] = $db->prepare('SELECT id, name FROM s_contexts ORDER BY name');
 		$this->preparedQueries['has'] = $db->prepare('SELECT COUNT(*) FROM s_contexts WHERE name=:name');
 		$this->preparedQueries['add'] = $db->prepare('INSERT INTO s_contexts (name) VALUES (:name)');
