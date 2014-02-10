@@ -4,6 +4,8 @@
 	"description": "A sqlite-based key-value-store implementation.",
 	"homepage": "https://github.com/rkrx/php-sqlite-key-value-store",
 	"license": "MIT",
+	"minimum-stability": "dev",
+	"prefer-stable": true,
 	"require": {
 		"php": ">= 5.3",
 		"rkr/key-value-stores": "dev-master"
