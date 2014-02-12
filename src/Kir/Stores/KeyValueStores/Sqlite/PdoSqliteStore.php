@@ -16,16 +16,22 @@ class PdoSqliteStore implements ReadWriteStore {
 	private $preparedQueries = array();
 
 	/**
+	 * @var int
+	 */
+	private $ttl = null;
+
+	/**
 	 * @param PDO $db
 	 * @param int $id
+	 * @param $ttl
 	 */
-	public function __construct(PDO $db, $id) {
-		static $x = 0; $x++;
+	public function __construct(PDO $db, $id, $ttl) {
 		$id = intval($id);
-		$this->preparedQueries['has'] = $db->prepare("SELECT COUNT(*) FROM s_keyvalue WHERE context_id={$id} AND name=:key");
-		$this->preparedQueries['get'] = $db->prepare("SELECT value FROM s_keyvalue WHERE context_id={$id} AND name=:key");
-		$this->preparedQueries['set'] = $db->prepare("REPLACE INTO s_keyvalue (context_id, name, value) VALUES ({$id}, :key, :value)");
-		$this->preparedQueries['rem'] = $db->prepare("DELETE FROM s_keyvalue WHERE context_id={$id} AND name=:key");
+		$this->ttl = $ttl;
+		$this->preparedQueries['has'] = $db->prepare("SELECT COUNT(*) FROM s_keyvalue WHERE context_id={$id} AND (IFNULL(ttl, 0)=0 OR ttl<=:ttl) AND name=:key;");
+		$this->preparedQueries['get'] = $db->prepare("SELECT value FROM s_keyvalue WHERE context_id={$id} AND (IFNULL(ttl, 0)=0 OR ttl<=:ttl) AND name=:key;");
+		$this->preparedQueries['set'] = $db->prepare("REPLACE INTO s_keyvalue (context_id, name, value, ttl) VALUES ({$id}, :key, :value, :ttl);");
+		$this->preparedQueries['rem'] = $db->prepare("DELETE FROM s_keyvalue WHERE context_id={$id} AND name=:key;");
 	}
 
 	/**
@@ -38,13 +44,14 @@ class PdoSqliteStore implements ReadWriteStore {
 		$key = TypeCheckHelper::convertKey($key);
 		$stmt = $this->getPreparedQuery('has');
 		try {
-			$stmt->bindParam(':key', $key, PDO::PARAM_STR);
+			$stmt->bindValue(':key', $key, PDO::PARAM_STR);
+			$stmt->bindValue(':ttl', time(), PDO::PARAM_INT);
 			$stmt->execute();
 			$res = $stmt->fetchColumn(0) > 0;
 			$stmt->closeCursor();
 		} catch (Exception $e) {
 			$stmt->closeCursor();
-			throw new InvalidOperationException($e->getMessage());
+			throw new InvalidOperationException($e->getMessage(), (int) $e->getCode(), $e);
 		}
 		return $res;
 	}
@@ -64,7 +71,8 @@ class PdoSqliteStore implements ReadWriteStore {
 		}
 		$stmt = $this->getPreparedQuery('get');
 		try {
-			$stmt->bindParam(':key', $key, PDO::PARAM_STR);
+			$stmt->bindValue(':key', $key, PDO::PARAM_STR);
+			$stmt->bindValue(':ttl', time(), PDO::PARAM_INT);
 			$stmt->execute();
 			$string = $stmt->fetchColumn(0);
 			$stmt->closeCursor();
@@ -89,8 +97,9 @@ class PdoSqliteStore implements ReadWriteStore {
 		$stmt = $this->getPreparedQuery('set');
 		try {
 			$string = serialize($value);
-			$stmt->bindParam(':key', $key, PDO::PARAM_STR);
-			$stmt->bindParam(':value', $string, PDO::PARAM_STR);
+			$stmt->bindValue(':key', $key, PDO::PARAM_STR);
+			$stmt->bindValue(':value', $string, PDO::PARAM_STR);
+			$stmt->bindValue(':ttl', time() + $this->ttl, PDO::PARAM_INT);
 			$stmt->execute();
 			$stmt->closeCursor();
 		} catch (Exception $e) {
@@ -120,7 +129,7 @@ class PdoSqliteStore implements ReadWriteStore {
 			throw new InvalidOperationException($e->getMessage());
 		}
 		try {
-			$stmt->bindParam(':key', $key);
+			$stmt->bindValue(':key', $key);
 			$stmt->execute();
 			$stmt->closeCursor();
 		} catch (Exception $e) {

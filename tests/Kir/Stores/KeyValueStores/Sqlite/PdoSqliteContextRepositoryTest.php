@@ -10,14 +10,14 @@ class PdoSqliteContextRepositoryTest extends ContextRepositoryTest implements Co
 	 */
 	public function setUp() {
 		parent::setContextRepository(new ClosureContextRepositoryFactory(function () {
-			return new PdoSqliteContextRepository(':memory:');
+			return new PdoSqliteContextRepository(':memory:', null);
 		}));
 	}
 
 	/**
 	 */
 	public function testGet() {
-		$stores = new PdoSqliteContextRepository(':memory:');
+		$stores = new PdoSqliteContextRepository(':memory:', null);
 		$store = $stores->get('test');
 		$this->assertInstanceOf('Kir\\Stores\\KeyValueStores\\Sqlite\\PdoSqliteStore', $store);
 		parent::testGet();

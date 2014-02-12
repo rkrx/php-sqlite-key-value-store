@@ -12,7 +12,7 @@ class PdoSqliteStoreTest extends ReadWriteStoreTest implements ReadWriteStoreTes
 	public function setUp() {
 		$db = new Sqlite(':memory:');
 		parent::setStoreFactory(new ClosureStoreFactory(function () use ($db) {
-			return new PdoSqliteStore($db, 1);
+			return new PdoSqliteStore($db, 1, null);
 		}));
 	}
 }

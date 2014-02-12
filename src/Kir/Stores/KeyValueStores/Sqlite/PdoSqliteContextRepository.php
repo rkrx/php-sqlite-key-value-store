@@ -17,6 +17,11 @@ class PdoSqliteContextRepository implements IterableContextRepositoryWithIterabl
 	private $db = null;
 
 	/**
+	 * @var int
+	 */
+	private $ttl = null;
+
+	/**
 	 * @var array
 	 */
 	private $existCache = array();
@@ -32,10 +37,14 @@ class PdoSqliteContextRepository implements IterableContextRepositoryWithIterabl
 	private $preparedQueries = array();
 
 	/**
-	 *
+	 * @param string $filename
+	 * @param int $maxTtl
 	 */
-	public function __construct($filename) {
+	public function __construct($filename, $maxTtl = null) {
 		$this->db = $db = new Sqlite($filename);
+
+		$db->prepare("DELETE FROM s_keyvalue WHERE ttl IS NOT NULL AND ttl < " . time());
+
 		$this->preparedQueries['iterator'] = $db->prepare('SELECT id, name FROM s_contexts ORDER BY name');
 		$this->preparedQueries['has'] = $db->prepare('SELECT COUNT(*) FROM s_contexts WHERE name=:name');
 		$this->preparedQueries['add'] = $db->prepare('INSERT INTO s_contexts (name) VALUES (:name)');
@@ -89,7 +98,7 @@ class PdoSqliteContextRepository implements IterableContextRepositoryWithIterabl
 		if(!array_key_exists($name, $this->instanceCache)) {
 			$id = $this->add($name);
 			$this->existCache[$name] = true;
-			$this->instanceCache[$name] = new PdoSqliteStore($this->db, $id);
+			$this->instanceCache[$name] = new PdoSqliteStore($this->db, $id, $this->ttl);
 		}
 		return $this->instanceCache[$name];
 	}
