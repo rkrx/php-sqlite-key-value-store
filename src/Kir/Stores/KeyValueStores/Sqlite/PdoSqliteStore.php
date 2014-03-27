@@ -6,7 +6,7 @@ use PDOStatement;
 use Exception;
 use InvalidArgumentException;
 use Kir\Stores\KeyValueStores\InvalidOperationException;
-use Kir\Stores\KeyValueStores\Common\TypeCheckHelper;
+use Kir\Stores\KeyValueStores\Helpers\TypeCheckHelper;
 use Kir\Stores\KeyValueStores\ReadWriteStore;
 
 class PdoSqliteStore implements ReadWriteStore {

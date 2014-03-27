@@ -1,7 +1,7 @@
 <?php
 namespace Kir\Stores\KeyValueStores\Sqlite;
 
-use Kir\Stores\KeyValueStores\Common\TypeCheckHelper;
+use Kir\Stores\KeyValueStores\Helpers\TypeCheckHelper;
 use Kir\Stores\KeyValueStores\Sqlite\Helper\Sqlite;
 use PDO;
 use PDOStatement;
