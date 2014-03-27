@@ -8,7 +8,7 @@
 	"prefer-stable": true,
 	"require": {
 		"php": ">= 5.3",
-		"rkr/key-value-stores": "dev-master"
+		"rkr/key-value-stores": "*"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "~3.7"
