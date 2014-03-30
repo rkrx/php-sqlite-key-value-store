@@ -1,5 +1,6 @@
 php-sqlite-key-value-store
 ==========================
+[![Travis](https://travis-ci.org/rkrx/php-sqlite-key-value-store.svg)](https://travis-ci.org/rkrx/php-sqlite-key-value-store)
 
 A sqlite-based key-value-store implementation.
 
