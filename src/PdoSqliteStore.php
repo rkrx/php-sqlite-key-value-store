@@ -86,12 +86,11 @@ class PdoSqliteStore implements ReadWriteStore {
 	/**
 	 * @param string $key
 	 * @param mixed $value The value to store.
-	 * @return $this
+	 * @param int|null $ttl
 	 * @throws InvalidOperationException
-	 * @throws InvalidArgumentException
-	 * @throws Exception
+	 * @return $this
 	 */
-	public function set($key, $value) {
+	public function set($key, $value, $ttl = null) {
 		$key = TypeCheckHelper::convertKey($key);
 		$value = TypeCheckHelper::convertValue($value);
 		$stmt = $this->getPreparedQuery('set');
@@ -99,7 +98,10 @@ class PdoSqliteStore implements ReadWriteStore {
 			$string = serialize($value);
 			$stmt->bindValue(':key', $key, PDO::PARAM_STR);
 			$stmt->bindValue(':value', $string, PDO::PARAM_STR);
-			$stmt->bindValue(':ttl', time() + $this->ttl, PDO::PARAM_INT);
+			if($ttl === null) {
+				$ttl = $this->ttl;
+			}
+			$stmt->bindValue(':ttl', time() + $ttl, PDO::PARAM_INT);
 			$stmt->execute();
 			$stmt->closeCursor();
 		} catch (Exception $e) {
