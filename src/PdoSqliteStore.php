@@ -28,8 +28,8 @@ class PdoSqliteStore implements ReadWriteStore {
 	public function __construct(PDO $db, $id, $ttl) {
 		$id = intval($id);
 		$this->ttl = $ttl;
-		$this->preparedQueries['has'] = $db->prepare("SELECT COUNT(*) FROM s_keyvalue WHERE context_id={$id} AND (IFNULL(ttl, 0)=0 OR ttl<=:ttl) AND name=:key;");
-		$this->preparedQueries['get'] = $db->prepare("SELECT value FROM s_keyvalue WHERE context_id={$id} AND (IFNULL(ttl, 0)=0 OR ttl<=:ttl) AND name=:key;");
+		$this->preparedQueries['has'] = $db->prepare("SELECT COUNT(*) FROM s_keyvalue WHERE context_id={$id} AND (IFNULL(ttl, 0)=0 OR ttl>=:ttl) AND name=:key;");
+		$this->preparedQueries['get'] = $db->prepare("SELECT value FROM s_keyvalue WHERE context_id={$id} AND (IFNULL(ttl, 0)=0 OR ttl>=:ttl) AND name=:key;");
 		$this->preparedQueries['set'] = $db->prepare("REPLACE INTO s_keyvalue (context_id, name, value, ttl) VALUES ({$id}, :key, :value, :ttl);");
 		$this->preparedQueries['rem'] = $db->prepare("DELETE FROM s_keyvalue WHERE context_id={$id} AND name=:key;");
 	}
