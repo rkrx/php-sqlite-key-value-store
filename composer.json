@@ -22,5 +22,8 @@
 		"psr-4": {
 			"Kir\\Stores\\KeyValueStores\\Sqlite\\": ["src/", "tests/"]
 		}
-	}
+	},
+	"repositories": [{
+		"type": "vcs", "url": "https://github.com/rkrx/php-key-value-stores"
+	}]
 }
