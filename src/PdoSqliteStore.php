@@ -6,14 +6,9 @@ use Kir\Stores\KeyValueStores\Helpers\TypeCheckHelper;
 use Kir\Stores\KeyValueStores\ReadWriteStore;
 
 class PdoSqliteStore implements ReadWriteStore {
-	/**
-	 * @var \PDOStatement
-	 */
+	/** @var \PDOStatement */
 	private $preparedQueries = array();
-
-	/**
-	 * @var int
-	 */
+	/** @var int */
 	private $ttl = null;
 
 	/**
@@ -25,7 +20,7 @@ class PdoSqliteStore implements ReadWriteStore {
 		$id = intval($id);
 		$this->ttl = $ttl;
 		$this->preparedQueries['has'] = $db->prepare("SELECT COUNT(*) FROM s_keyvalue WHERE context_id={$id} AND (IFNULL(ttl, 0)=0 OR ttl>=:ttl) AND name=:key;");
-		$this->preparedQueries['get'] = $db->prepare("SELECT value FROM s_keyvalue WHERE context_id={$id} AND (IFNULL(ttl, 0)=0 OR ttl>=:ttl) AND name=:key;");
+		$this->preparedQueries['get'] = $db->prepare("SELECT value FROM s_keyvalue WHERE context_id={$id} AND (ttl IS NULL OR ttl>=:ttl) AND name=:key;");
 		$this->preparedQueries['set'] = $db->prepare("REPLACE INTO s_keyvalue (context_id, name, value, ttl) VALUES ({$id}, :key, :value, :ttl);");
 		$this->preparedQueries['rem'] = $db->prepare("DELETE FROM s_keyvalue WHERE context_id={$id} AND name=:key;");
 	}
@@ -97,7 +92,10 @@ class PdoSqliteStore implements ReadWriteStore {
 			if($ttl === null) {
 				$ttl = $this->ttl;
 			}
-			$stmt->bindValue(':ttl', time() + $ttl, \PDO::PARAM_INT);
+			if($ttl !== null) {
+				$ttl = $ttl + time();
+			}
+			$stmt->bindValue(':ttl', $ttl, \PDO::PARAM_INT);
 			$stmt->execute();
 			$stmt->closeCursor();
 		} catch (\Exception $e) {
